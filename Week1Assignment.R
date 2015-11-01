@@ -16,12 +16,19 @@
 
 
 # 3. Show how to take a trio of input numbers a, b, and c and implement the quadratic equation.
-        QuadEqString<-function(a, b, c){
+        # PrintQuadEq prints the quadratic equation 
+        PrintQuadEq<-function(a, b, c){
                 sprintf("%sx2 + %sx + %s", a, b, c)
         }
-
-        eq1<-QuadEqString(10,5,3)
-        eq1
+        
+        # SolveQuadEq solves the quadratic equation and displays the output along with the printed quadratic equation 
+        SolveQuadEq<-function(a, b, c){
+                x1 <- (-b + sqrt((b*b) - (4*a*c))) / 2*a
+                x2 <- (-b - sqrt((b*b) - (4*a*c))) / 2*a
+                sprintf("The solutions for the Quadratic equation : %s is (%s, %s)", PrintQuadEq(a, b, c), x1, x2)
+        }
+        
+        SolveQuadEq(3,5,-2)
         
         
         
