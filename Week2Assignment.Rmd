@@ -1,0 +1,124 @@
+---
+title: "Week 2 Assignment"
+author: "Kishore Prasad"
+date: "Wednesday, November 04, 2015"
+output:
+  html_document:
+    toc: true
+---
+
+# Introduction 
+In this markdown, we will implement the "n choose r" functionality. We will limit the scope of this function to only non-negative integers.
+
+# Implement Factorial 
+To implement this we first need a Factorial function. The below code implements this Factorial function for any non-negative integer. Any input less than zero returns zero.
+
+```{r}
+
+calcFact<-function(x){
+if (x<0) 0 
+else if (x==1) 1
+else return(x*calcFact(x-1))
+} 
+
+```
+
+# Test Factorial 
+
+Let us now test the factorial function with a few values:
+
+### 1. With a positive value 
+
+```{r}
+x<-calcFact(5)
+x
+
+```
+
+### 2. With zero  
+
+```{r}
+
+
+x<-calcFact(0)
+x
+
+
+```
+
+### 3. With negative value 
+
+```{r}
+
+x<-calcFact(-5)
+x
+
+```
+
+# Implement n choose r 
+
+We will now implement the "n choose r" functionality with the below function.The valid parameters being integers >= zero and n>r. Any invalid parameters returns a result of zero.
+
+We will also pass some default parameters in case the user does not input a parameter. 
+
+```{r}
+
+nChooser<-function(n=10, r=7){
+     if(n<0 || r<0 || n<r ) 0
+     else
+         return ( calcFact(n) / (calcFact(n-r) * calcFact(r)))
+ }
+
+```
+
+# Test n choose r 
+
+Lets now test with some values:
+
+### 1. One of the arguments less than zero
+
+```{r}
+
+nChooser(-3,0)
+
+nChooser(3,-2)
+
+```
+
+### 2. n < r 
+
+```{r}
+
+nChooser(3,5)
+
+```
+
+
+### 3. passing valid parameters
+
+```{r}
+
+nChooser(5,3)
+nChooser(7,5)
+
+```
+
+### 4. Passing only n
+
+```{r}
+
+
+nChooser(11,)
+nChooser(5,)
+
+```
+
+
+### 5. Passing only r
+
+```{r}
+
+nChooser(,6)
+nChooser(,15)
+
+```
