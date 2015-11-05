@@ -15,10 +15,14 @@ To implement this we first need a Factorial function. The below code implements 
 
 ```{r}
 
-calcFact<-function(x){
-if (x<0) 0 
-else if (x==1) 1
-else return(x*calcFact(x-1))
+calcFact <- function(fact_var) {
+  if (fact_var < 0) {
+      0
+  } else if (fact_var == 1) {
+      1
+  } else { 
+      return (fact_var * calcFact(fact_var - 1)) # recursively call the function
+  }
 } 
 
 ```
@@ -30,8 +34,8 @@ Let us now test the factorial function with a few values:
 ### 1. With a positive value 
 
 ```{r}
-x<-calcFact(5)
-x
+fact1 <- calcFact(5)
+fact1
 
 ```
 
@@ -40,8 +44,8 @@ x
 ```{r}
 
 
-x<-calcFact(0)
-x
+fact1 <- calcFact(0)
+fact1
 
 
 ```
@@ -50,8 +54,8 @@ x
 
 ```{r}
 
-x<-calcFact(-5)
-x
+fact1 <- calcFact(-5)
+fact1
 
 ```
 
@@ -63,11 +67,13 @@ We will also pass some default parameters in case the user does not input a para
 
 ```{r}
 
-nChooser<-function(n=10, r=7){
-     if(n<0 || r<0 || n<r ) 0
-     else
-         return ( calcFact(n) / (calcFact(n-r) * calcFact(r)))
- }
+nChooser <- function(n=10, r=7) {
+  if (n < 0 || r < 0 || n < r ) {
+     0
+  } else {
+     return ( calcFact(n) / (calcFact(n-r) * calcFact(r)))
+  }
+}
 
 ```
 
@@ -79,9 +85,9 @@ Lets now test with some values:
 
 ```{r}
 
-nChooser(-3,0)
+nChooser(-3, 0)
 
-nChooser(3,-2)
+nChooser(3, -2)
 
 ```
 
@@ -89,7 +95,7 @@ nChooser(3,-2)
 
 ```{r}
 
-nChooser(3,5)
+nChooser(3, 5)
 
 ```
 
@@ -98,8 +104,8 @@ nChooser(3,5)
 
 ```{r}
 
-nChooser(5,3)
-nChooser(7,5)
+nChooser(5, 3)
+nChooser(7, 5)
 
 ```
 
@@ -108,8 +114,8 @@ nChooser(7,5)
 ```{r}
 
 
-nChooser(11,)
-nChooser(5,)
+nChooser(11, )
+nChooser(5, )
 
 ```
 
@@ -118,7 +124,7 @@ nChooser(5,)
 
 ```{r}
 
-nChooser(,6)
-nChooser(,15)
+nChooser( ,6)
+nChooser( ,15)
 
 ```
