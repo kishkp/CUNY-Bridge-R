@@ -1,0 +1,108 @@
+---
+title: "Week3Assignment"
+author: "Kishore Prasad"
+date: "November 9, 2015"
+output: html_document
+---
+
+First we are to download the data from a github repository
+
+```{r}
+library(RCurl)
+datafile<-getURL("https://raw.githubusercontent.com/kishkp/CUNY-Bridge-R/master/agaricus-lepiota.data", ssl.verifypeer = FALSE )
+mushroomdata<-read.csv(text = datafile, header=FALSE, stringsAsFactors = FALSE)
+
+```
+
+Let's now name the columns for the data that was downloaded.
+
+```{r}
+colnames(mushroomdata)<- c("mushroom-class", "cap-shape","cap-surface","cap-color","bruises","odor","gill-attachment", "gill-spacing","gill-size","gill-color","stalk-shape","stalk-root","stalk-surface-above-ring","stalk-surface-below-ring","stalk-color-above-ring","stalk-color-below-ring","veil-type","veil-color","ring-number","ring-type","spore-print-color","population","habitat")
+
+```
+
+We now convert the columns in the data to factors with readable labels.
+
+Note:  We could have done this step after working thru all the transformations. This would save processing time since we will be working with a smaller dataset. However, in this case, since the data is not huge, we make an exception.
+
+```{r}
+
+mushroomdata$`mushroom-class` <- factor(mushroomdata$`mushroom-class`, levels=c('p','e'), labels=c('Poisonous','Edible'))
+
+mushroomdata$`cap-shape` <- factor(mushroomdata$`cap-shape`, levels=c('b','c','x','f','k','s'), labels=c('bell','conical','convex','flat','knobbed','sunken'))
+
+mushroomdata$`cap-surface` <- factor(mushroomdata$`cap-surface`, levels=c('f','g','y','s'), labels=c('fibrous','grooves','scaly','smooth'))
+
+mushroomdata$`cap-color` <- factor(mushroomdata$`cap-color`, levels=c('n','b','c','g','r','p','u','e','w','y'), labels=c('brown','buff','cinnamon','gray','green','pink','purple','red','white','yellow'))
+
+mushroomdata$`bruises` <- factor(mushroomdata$`bruises`, levels=c('t','f'), labels=c('bruises','no'))
+
+mushroomdata$`odor` <- factor(mushroomdata$`odor`, levels=c('a','l','c','y','f','m','n','p','s'), labels=c('almond','anise','creosote','fishy','foul','musty','none','pungent','spicy'))
+
+mushroomdata$`gill-attachment` <- factor(mushroomdata$`gill-attachment`, levels=c('a','d','f','n'), labels=c('attached','descending','free','notched'))
+
+mushroomdata$`gill-spacing` <- factor(mushroomdata$`gill-spacing`, levels=c('c','w','d'), labels=c('close','crowded','distant'))
+
+mushroomdata$`gill-size` <- factor(mushroomdata$`gill-size`, levels=c('b','n'), labels=c('broad','narrow'))
+
+mushroomdata$`gill-color` <- factor(mushroomdata$`gill-color`, levels=c('k','n','b','h','g','r','o','p','u','e','w','y'), labels=c('black','brown','buff','chocolate','gray','green','orange','pink','purple','red','white','yellow'))
+
+mushroomdata$`stalk-shape` <- factor(mushroomdata$`stalk-shape`, levels=c('e','t'), labels=c('enlarging','tapering'))
+
+mushroomdata$`stalk-root` <- factor(mushroomdata$`stalk-root`, levels=c('b','c','u','e','z','r','?'), labels=c('bulbous','club','cup','equal','rhizomorphs','rooted','missing'))
+
+mushroomdata$`stalk-surface-above-ring` <- factor(mushroomdata$`stalk-surface-above-ring`, levels=c('f','y','k','s'), labels=c('fibrous','scaly','silky','smooth'))
+
+mushroomdata$`stalk-surface-below-ring` <- factor(mushroomdata$`stalk-surface-below-ring`, levels=c('f','y','k','s'), labels=c('fibrous','scaly','silky','smooth'))
+
+mushroomdata$`stalk-color-above-ring` <- factor(mushroomdata$`stalk-color-above-ring`, levels=c('n','b','c','g','o','p','e','w','y'), labels=c('brown','buff','cinnamon','gray','orange','pink','red','white','yellow'))
+
+mushroomdata$`stalk-color-below-ring` <- factor(mushroomdata$`stalk-color-below-ring`, levels=c('n','b','c','g','o','p','e','w','y'), labels=c('brown','buff','cinnamon','gray','orange','pink','red','white','yellow'))
+
+mushroomdata$`veil-type` <- factor(mushroomdata$`veil-type`, levels=c('p','u'), labels=c('partial','universal'))
+
+mushroomdata$`veil-color` <- factor(mushroomdata$`veil-color`, levels=c('n','o','w','y'), labels=c('brown','orange','white','yellow'))
+
+mushroomdata$`ring-number` <- factor(mushroomdata$`ring-number`, levels=c('n','o','t'), labels=c('none','one','two'))
+
+mushroomdata$`ring-type` <- factor(mushroomdata$`ring-type`, levels=c('c','e','f','l','n','p','s','z'), labels=c('cobwebby','evanescent','flaring','large','none','pendant','sheathing','zone'))
+
+mushroomdata$`spore-print-color` <- factor(mushroomdata$`spore-print-color`, levels=c('k','n','b','h','r','o','u','w','y'), labels=c('black','brown','buff','chocolate','green','orange','purple','white','yellow'))
+
+mushroomdata$`population` <- factor(mushroomdata$`population`, levels=c('a','c','n','s','v','y'), labels=c('abundant','clustered','numerous','scattered','several','solitary'))
+
+mushroomdata$`habitat` <- factor(mushroomdata$`habitat`, levels=c('g','l','m','p','u','w','d'), labels=c('grasses','leaves','meadows','paths','urban','waste','woods'))
+```
+
+Now we subset the data. For our purpose, lets include 
+
+a. columns : mushroom-class, bruises, veil-type, veil-color, ring-number, ring-type, habitat 
+b. rows    : filter habitat for meadows','paths','urban' only.
+
+The first transformation we apply is to select only the required columns: mushroom-class, bruises, veil-type, veil-color, ring-number, ring-type.
+
+```{r}
+
+mushroomdata_1 <- mushroomdata[ , c("mushroom-class", "bruises", "veil-type", "veil-color", "ring-number", "ring-type", "habitat")]
+
+```
+
+Next we filter the data for only the required rows for habitat - 'meadows','paths','urban'.
+
+```{r}
+
+mushroomdata_1 <- mushroomdata_1[mushroomdata_1$`habitat`%in% c('meadows','paths','urban'), ]
+
+```
+
+Lets see the effect of this subsetting:
+
+```{r, echo=FALSE}
+
+sprintf("Rows before subsetting %s", nrow(mushroomdata) )
+sprintf("Rows after subsetting %s", nrow(mushroomdata_1) )
+
+sprintf("Columns before subsetting %s", ncol(mushroomdata) )
+sprintf("Columns after subsetting %s", ncol(mushroomdata_1) )
+
+```
