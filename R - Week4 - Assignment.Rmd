@@ -1,0 +1,137 @@
+---
+title: "CUNY Bridge - Week 4 Assignment"
+author: "Kishore Prasad"
+date: "November 20, 2015"
+output: html_document
+---
+
+For this assignment, I am using a csv file that contains taxi data. This dataset contains taxi trip information for a month of data and for specific pickup and drop locations. We will use this data to perform exploratory analysis.
+
+A detailed data dictionary for the taxi data is as below:
+
+JourneyDate  - Trip date
+
+Pickup_L - The Pickup Location 
+
+Drop_L - The Drop Location
+
+No_Trips - No of Trips between these location in a given day 
+
+Distance_Sum - Total distance covered across the trips
+
+Duration_Sum - Total duration spent on meter
+
+MeterFare_Sum - The Meter Fare
+
+WaitingFare_Sum - The  Wait Fare
+
+OnCallDistance_Sum - Distance travelled by taxis that is unmetered after receiveing a call
+
+
+First we are to download the data from a github repository
+
+```{r}
+library(RCurl)
+datafile<-getURL("https://raw.githubusercontent.com/kishkp/CUNY-Bridge-R/master/taxidata.csv", ssl.verifypeer = FALSE )
+taxidata<-read.csv(text = datafile, header=TRUE, stringsAsFactors = FALSE)
+
+```
+
+Now we carry out some transformations on the data.  
+The first transformation we apply is to generate a day of week for the dates
+
+```{r}
+library(lubridate)
+taxidata<-cbind(taxidata[,], DayOfWeek=wday(as.Date(taxidata[,1],'%m/%d/%Y'), label=TRUE))
+
+```
+
+Next we add the meter fare and waiting fare to get the total fare.
+```{r}
+taxidata<-cbind(taxidata[,], TotalFare = taxidata$MeterFare_Sum + taxidata$WaitingFare_Sum, label=TRUE)
+
+```
+
+We now see a box plot of the trips by day of week
+
+```{r}
+
+boxplot(No_Trips~DayOfWeek, data=aggregate(No_Trips~DayOfWeek+Pickup_L, taxidata, FUN = sum), 
+        col=c("Violet", "blue4","blue","green","yellow","orange","red"),
+        ylab = "No. of Trips", xlab = "Day of Week")
+
+```
+
+
+We now see a box plot of the fare collections by day of week
+
+```{r}
+
+boxplot(TotalFare~DayOfWeek, data=aggregate(TotalFare~DayOfWeek+Pickup_L, taxidata, FUN = sum), 
+        col=c("Violet", "blue4","blue","green","yellow","orange","red"),
+        ylab = "No. of Trips", xlab = "Day of Week")
+
+```
+
+We can also see a scatter plot of the distance with the duration
+
+```{r}
+attach(taxidata)
+plot(Distance_Sum, Duration_Sum, main="Distance vs Duration", 
+  	xlab="Distance Travelled", ylab="Duration of Trip")
+abline(lm(Duration_Sum~Distance_Sum), col="red")
+
+```
+
+Let us see if the average speed increases if the distance is long. For this we again do a scatter plot to see distance vs average speed.
+
+```{r}
+attach(taxidata)
+plot(Distance_Sum, MaxSpeed_Mean, main="Distance vs Max Speed", 
+  	xlab="Distance Travelled", ylab="Max Speed")
+abline(lm(MaxSpeed_Mean~Distance_Sum), col="red")
+
+```
+
+Surprisingly it seems that as the distance increases, the drivers are a bit relaxed and tend to go slow. The relationship seems to be inverse but to a slight degree. As we can see the slope is not very steep.
+
+We can try to find out how the variables are correlated to each other. This will give an indication of the strongest correlation in the data. 
+
+Using the code from http://www.statmethods.net/graphs/scatterplot.html
+
+```{r}
+library(gclus)
+data <- taxidata[c("No_Trips","Distance_Sum","Duration_Sum","TotalFare")]
+data.r <- cor(data) 
+data.col <- dmat.color(data.r) 
+# reorder variables so those with highest correlation
+# are closest to the diagonal
+data.o <- order.single(data.r) 
+cpairs(data, data.o, panel.colors=data.col, gap=.5,
+main="Variables Ordered and Colored by Correlation" )
+```
+
+Lets now see a histogram of the No. Trips
+
+```{r}
+hist(No_Trips, breaks=100)
+```
+
+The data seems to be heavily skewed. Lets try to take only values in the IQR.
+
+```{r}
+hist(No_Trips[No_Trips>=quantile(No_Trips, 0.25) & No_Trips<=quantile(No_Trips, 0.75) ], breaks = 100)
+```
+
+Lets now have a look at the histogram for Total Fare.
+
+```{r}
+hist(TotalFare, breaks=100)
+```
+
+
+This also follows the same pattern as the No. of Trips.
+
+This concludes the analysis of the Taxi data. 
+
+
