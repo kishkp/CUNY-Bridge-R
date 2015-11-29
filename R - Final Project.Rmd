@@ -1,0 +1,122 @@
+---
+title: "CUNY - R Bridge - Final Project"
+author: "Kishore Prasad"
+date: "November 27, 2015"
+output: html_document
+---
+
+Lets first prepare the environment to use hflights data
+
+```{r}
+#install.packages("hflights")
+library(hflights)
+```
+
+Next, lets derive some variables that will be helpful in our analysis. 
+
+First we generate bins for the flight departure times. Lets generate the following bins:
+
+Dawn is from 12:00 AM to 7:00 
+Morning is from 7:01 to 12:00 
+Afternoon is from 12:01 16:00
+Evening is from 16:01 to 20:00
+Night is from 20:01 to 24:00
+
+```{r}
+fdata <- cbind(hflights, dep_slot=cut(hflights$DepTime,breaks=c(0000, 0700, 1200, 1600, 2000,2400), labels = c("Dawn","Morning","Afternoon","Evening","Night")))
+```
+
+Next, lets also generate a speed for the aircraft journey. We are only interested in the speed of the aircraft when in air. So we use the distance and the airtime as measures for the calculation. What we get is a miles / minute as the unit of speed.
+
+```{r}
+fdata <- cbind(fdata, speed = fdata$Distance / fdata$AirTime)
+```
+
+We will now discard the year field since it has a single value for 2011 and is not very useful in our analysis further.
+
+So we include all columns except the first.
+
+```{r}
+fdata <- fdata[,-1]
+```
+
+Some of the columns are coded. The following are the coded columns:
+
+Cancelled: cancelled indicator: 1 = Yes, 0 = No
+CancellationCode: reason for cancellation: A = carrier, B = weather, C = national air system, D = security
+Diverted: diverted indicator: 1 = Yes, 0 = No
+
+We will convert these columns into factors with readable labels.
+
+```{r}
+fdata$Cancelled <- factor(fdata$Cancelled, levels=c(1,0), labels=c('Yes','No'))
+fdata$CancellationCode <- factor(fdata$Cancelled, levels=c('A','B','C','D',''), labels=c('carrier','weather','national air system','security', 'Not Applicable'))
+fdata$Diverted <- factor(fdata$Diverted, levels=c(1,0), labels=c('Yes','No'))
+
+```
+
+Now we are ready for some analysis.
+
+
+Lets see how the distribution of Speed is.
+
+```{r}
+hist(fdata$speed)
+```
+
+We see that the speed is slightly skewed to the right - an almost normal distribution.  
+
+Lets now see how the delays fare by day of week
+
+```{r}
+boxplot(DepDelay~DayOfWeek, data=fdata, outline=FALSE, col=c("Violet", "blue4","blue","green","yellow","orange","red"), ylab = "Delayed Departure", xlab = "Day of Week")
+
+```
+
+Lets say we want to test a theory that the speed is increased when there is a delay. To test this, we will do the following:
+
+1. First we filter out all the records that are cancelled or diverted.
+2. Lets aggregate data at the Unique carrier + Flightnum + Distance level to calculate the mean speed for all the records.
+3. We now use this mean speed to calculate the variance for the speed during flight. We will calculate the percentage variance against the mean speed.
+4. We will now plot a scatter plot to check for any patterns and conclude.
+
+```{r}
+# 1. First we filter out all the records that are cancelled or diverted and generate a new dataset.
+sp_analysis <- fdata[fdata$Cancelled=='No',]
+sp_analysis <- sp_analysis[sp_analysis$Diverted=='No',]
+
+# 2. Lets aggregate data at the Unique carrier + Flightnum + Distance level to calculate the mean speed for all the records.
+
+sp_agg <- aggregate(sp_analysis$speed~sp_analysis$UniqueCarrier+sp_analysis$FlightNum+sp_analysis$Distance, sp_analysis, FUN = mean)
+
+names(sp_agg) <- c("UniqueCarrier", "FlightNum", "Distance", "AvgSpeed")
+
+sp_analysis <- merge(sp_analysis, sp_agg, by = c("UniqueCarrier", "FlightNum", "Distance"))
+
+# 3. We now use this mean speed to calculate the variance for the speed during flight. We will calculate the percentage variance against the mean speed.
+
+sp_analysis <- cbind(sp_analysis, SpeedVar = sp_analysis$speed - sp_analysis$AvgSpeed)
+
+
+# 4. We will now plot a scatter plot to check for any patterns and conclude.
+
+attach(sp_analysis)
+plot(DepDelay, SpeedVar)
+abline(lm(SpeedVar~DepDelay), col="red")
+
+```
+
+Based on the pattern it seems that there is a variance in speed when the departure delay is less. As the delay in departure increases, the variance in speed starts to decrease.
+
+Lets see if the speed varies if the distance is more.
+
+```{r}
+attach(sp_analysis)
+plot(Distance, SpeedVar)
+abline(lm(SpeedVar~Distance), col="red")
+
+```
+
+Again here, there is no specific pattern that emerges.
+
+
